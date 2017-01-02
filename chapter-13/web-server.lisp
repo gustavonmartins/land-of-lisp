@@ -71,6 +71,6 @@
   (if (equal path "greeting.html")
       (let ((name (assoc 'name params)))
 	(if (not name)
-	    (princ "<HTML><BODY><FORM>What is your name?<input name='name'/></FORM><BODY></HTML>")
+	    (princ "<HTML><FORM>What is your name?<input name='name'/></FORM></HTML>")
 	    (format t "<html>Nice to meet you, ~a!</html>" (cdr name))))
       (princ "Sorry... I dont know that page.")))
