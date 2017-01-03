@@ -1,43 +1,71 @@
-;improvements of chapter 16
 (load "dice-of-doom-v1.lisp")
+(load "lazy.lisp")
 
-(defparameter *board-size* 3)
+(defparameter *board-size* 4)
 (defparameter *board-hexnum* (* *board-size* *board-size*))
 
+(defun add-passing-move (board player spare-dice first-move moves)
+  (if first-move
+      moves
+      (lazy-cons (list nil
+		       (game-tree (add-new-dice board player
+						(1- spare-dice))
+				  (mod (1+ player) *num-players*)
+				  0
+				  t))
+		 moves)))
 
+(defun attacking-moves (board cur-player spare-dice)
+  (labels ((player (pos)
+	     (car (aref board pos)))
+	   (dice (pos)
+	     (cadr (aref board pos))))
+    (lazy-mapcan
+     (lambda (src)
+       (if (eq (player src) cur-player)
+	   (lazy-mapcan
+	    (lambda (dst)
+	      (if (and (not (eq (player dst)
+				cur-player))
+		       (> (dice src) (dice dst)))
+		  (make-lazy
+		   (list (list (list src dst)
+			       (game-tree (board-attack board
+							cur-player
+							src
+							dst
+							(dice src))
+					  cur-player
+					  (+ spare-dice (dice dst))
+					  nil))))
+		  (lazy-nil)))
+	    (make-lazy (neighbors src)))
+       (lazy-nil)))
+    (make-lazy (loop for n below *board-hexnum*
+		  collect n)))))
 
-(let ((old-neighbors (symbol-function 'neighbors)) ;this overwritting is bad!
-      (previous (make-hash-table)))
-  (defun neighbors (pos)
-    (or (gethash pos previous)
-	(setf (gethash pos previous) (funcall old-neighbors pos)))))
+(defun handle-human (tree)
+  (fresh-line)
+  (princ "choose your move:")
+  (let ((moves (caddr tree)))
+    (labels ((print-moves (moves n)
+	       (unless (lazy-null moves)
+		 (let* ((move (lazy-car moves))
+			(action (car move)))
+		   (fresh-line)
+		   (format t "~a. " n)
+		   (if action
+		       (format t "~a -> ~a" (car action) (cadr action))
+		       (princ "end turn")))
+		 (print-moves (lazy-cdr moves)(1+ n)))))
+      (print-moves moves 1))
+    (fresh-line)
+    (cadr (lazy-nth (1- (read)) moves))))
 
-(let ((old-game-tree (symbol-function 'game-tree))
-	(previous (make-hash-table :test #'equalp)))
-  (defun game-tree (&rest rest)
-    (or (gethash rest previous)
-	(setf (gethash rest previous) (apply old-game-tree rest)))))
+(defun play-vs-human (tree)
+  (print-info tree)
+  (if (not (lazy-null (caddr tree)))
+      (play-vs-human (handle-human tree))
+      (announce-winner (cadr tree))))
 
-(let ((old-rate-position (symbol-function 'rate-position))
-      (previous (make-hash-table)))
-  (defun rate-position (tree player)
-    (let ((tab (gethash player previous)))
-      (unless tab
-	(setf tab (setf (gethash player previous) (make-hash-table))))
-      (or (gethash tree tab)
-	  (setf (gethash tree tab)
-		(funcall old-rate-position tree player))))))
-
-(defun add-new-dice (board player spare-dice)
-  (labels ((f (lst n acc)
-	     (cond ((zerop n) (append (reverse acc) lst))
-		   ((null lst) (reverse acc))
-		   (t (let ((cur-player (caar lst))
-			    (cur-dice (cadar lst)))
-			(if (and (eq cur-player player)
-				 (< cur-dice *max-dice*))
-			    (f (cdr lst)
-			       (1- n)
-			       (cons (list cur-player (1+ cur-dice)) acc))
-			    (f (cdr lst) n (cons (car lst) acc))))))))
-    (board-array (f (coerce board 'list) spare-dice ()))))
+;continues on page 388
