@@ -1,3 +1,6 @@
+;Chapter 17, SVG topic
+; From pg 358 to 363
+
 (load "chapter-16.lisp")
 
 (defun print-tag (name alist closingp)

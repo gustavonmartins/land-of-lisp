@@ -1,3 +1,5 @@
+;pg 344 to 351
+
 (defmacro let1 (var val &body body)
   `(let ((,var ,val))
      ,@body))

@@ -1,5 +1,6 @@
 ;performance optimizations from chapter 15
-(load "dice-of-doom-v1.lisp")
+;pg 326 to 334
+(load "dice-of-doom-v1-slow.lisp")
 
 (defparameter *board-size* 3)
 (defparameter *board-hexnum* (* *board-size* *board-size*))
@@ -18,7 +19,7 @@
     (or (gethash rest previous)
 	(setf (gethash rest previous) (apply old-game-tree rest)))))
 
-(let ((old-rate-position (symbol-function 'rate-position))
+(let ((old-rate-position (symbol-function 'rate-position))	;pg 330
       (previous (make-hash-table)))
   (defun rate-position (tree player)
     (let ((tab (gethash player previous)))

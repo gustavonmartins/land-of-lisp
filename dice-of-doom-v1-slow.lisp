@@ -1,4 +1,4 @@
-;chapter 15
+;chapter 15 pg 306 to 324
 
 (defparameter *num-players* 2)
 (defparameter *max-dice* 3)
@@ -140,7 +140,7 @@
 	(format t "The game is a tie between ~a" (mapcar #'player-letter w))
 	(format t "The winner is ~a" (player-letter (car w))))))
 
-(defun rate-position (tree player)
+(defun rate-position (tree player)	;pg 323
   (let ((moves (caddr tree)))
     (if moves
 	(apply (if (eq (car tree) player)

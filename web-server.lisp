@@ -68,9 +68,10 @@
       (usocket:socket-close socket))))
 
 (defun hello-request-handler (path header params)
-  (if (equal path "greeting.html")
+  (if (equal path "greeting")
       (let ((name (assoc 'name params)))
+	(format t "HTTP/1.1 200 OK~%~%")
 	(if (not name)
-	    (princ "<HTML><FORM>What is your name?<input name='name'/></FORM></HTML>")
+	    (princ "<html><form>What is your name?<input name='name'/></form></html>")
 	    (format t "<html>Nice to meet you, ~a!</html>" (cdr name))))
       (princ "Sorry... I dont know that page.")))

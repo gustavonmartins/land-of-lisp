@@ -1,3 +1,5 @@
+;chapter 18, pages 379 to 383
+
 (defmacro lazy (&body body)
   (let ((forced (gensym))
 	(value (gensym)))
